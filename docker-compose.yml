@@ -1,0 +1,11 @@
+services:
+  formpilot:
+    build: .
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    volumes:
+      - formpilot-data:/app/data
+
+volumes:
+  formpilot-data:

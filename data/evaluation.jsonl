@@ -1,0 +1,2 @@
+{"document_type":"university","text":"Universiti Malaya\nFull Name: Nur Aisyah Ahmad\nEmail: aisyah@example.com\nProgramme: Bachelor of Computer Science\nCGPA: 3.72","fields":{"name":"Nur Aisyah Ahmad","email":"aisyah@example.com","programme":"Bachelor of Computer Science","cgpa":"3.72"}}
+{"document_type":"scholarship","text":"Scholarship Application\nName: Lim Wei Jian\nEmail: wei@example.com\nInstitution: Universiti Teknologi Malaysia\nCGPA: 3.45","fields":{"name":"Lim Wei Jian","email":"wei@example.com","institution":"Universiti Teknologi Malaysia","cgpa":"3.45"}}
