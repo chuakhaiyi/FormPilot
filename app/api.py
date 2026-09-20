@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
-from .core import process_document, save_metadata
+from .core import process_document, recent_documents, save_metadata
 
 app = FastAPI(title="FormPilot", version="0.1.0")
 
@@ -8,6 +8,11 @@ app = FastAPI(title="FormPilot", version="0.1.0")
 @app.get("/health")
 def health() -> dict[str, bool]:
     return {"ok": True, "offline": True}
+
+
+@app.get("/documents")
+def documents() -> list[dict]:
+    return recent_documents()
 
 
 @app.post("/extract")

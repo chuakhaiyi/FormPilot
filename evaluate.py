@@ -6,7 +6,9 @@ from app.core import classify_document, extract_fields
 
 
 def score(expected: str | None, actual: str | None) -> tuple[int, int, int]:
-    return (int(bool(expected and actual)), int(bool(expected)), int(bool(actual)))
+    expected = expected.strip().casefold() if expected else None
+    actual = actual.strip().casefold() if actual else None
+    return (int(bool(expected and actual and expected == actual)), int(bool(expected)), int(bool(actual)))
 
 
 def main() -> None:

@@ -19,3 +19,9 @@ def test_flags_missing_and_invalid_cgpa():
     issues = validate_fields({"cgpa": {"value": "4.8"}})
     assert any(issue["field"] == "cgpa" and issue["severity"] == "error" for issue in issues)
     assert any(issue["field"] == "name" for issue in issues)
+
+
+def test_flags_reversed_date_range():
+    fields = extract_fields("Start Date: 31/12/2026\nEnd Date: 01/01/2026")
+    issues = validate_fields(fields)
+    assert any(issue["field"] == "end_date" for issue in issues)

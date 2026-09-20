@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import os
 import re
 import sqlite3
 import time
@@ -9,15 +10,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-FIELD_NAMES = ("name", "email", "phone", "programme", "institution", "cgpa", "date", "id_number")
+FIELD_NAMES = ("name", "email", "phone", "programme", "institution", "cgpa", "date", "start_date", "end_date", "id_number")
 SUPPORTED_TYPES = {"application/pdf", "image/png", "image/jpeg", "image/jpg", "image/webp"}
+SUPPORTED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".webp"}
 MAX_FILE_BYTES = 15 * 1024 * 1024
 
 
 def _ocr_image(image) -> str:
     import pytesseract
 
-    return pytesseract.image_to_string(image).strip()
+    return pytesseract.image_to_string(image, lang=os.getenv("FORMPILOT_TESSERACT_LANG", "eng")).strip()
 
 
 def ocr_document(content: bytes, filename: str) -> tuple[str, float]:
@@ -47,6 +49,10 @@ def classify_document(text: str) -> dict[str, Any]:
         "internship": ("internship", "industrial training", "practical training", "intern"),
         "university": ("university", "universiti", "student details", "programme of study", "cgpa"),
     }
+    if "scholarship" in lower or "biasiswa" in lower:
+        return {"type": "scholarship", "confidence": 0.9, "scores": {label: int(label == "scholarship") for label in keywords}}
+    if "internship" in lower or "industrial training" in lower or "practical training" in lower:
+        return {"type": "internship", "confidence": 0.9, "scores": {label: int(label == "internship") for label in keywords}}
     scores = {label: sum(lower.count(word) for word in words) for label, words in keywords.items()}
     label, score = max(scores.items(), key=lambda item: item[1])
     if score == 0:
@@ -72,6 +78,8 @@ def extract_fields(text: str) -> dict[str, dict[str, Any]]:
         "institution": _first([r"(?:institution|university|universiti|college)\s*[:\-]\s*([^\n]+)"], text),
         "cgpa": _first([r"(?:cgpa|c\.g\.p\.a\.)\s*[:\-]?\s*([0-9](?:\.[0-9]{1,2})?)"], text),
         "date": _first([r"(?:date of birth|date|tarikh)\s*[:\-]\s*([0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4}|[0-9]{4}[/-][0-9]{1,2}[/-][0-9]{1,2})"], text),
+        "start_date": _first([r"(?:start date|begin date|commencement date|from)\s*[:\-]\s*([0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4}|[0-9]{4}[/-][0-9]{1,2}[/-][0-9]{1,2})"], text),
+        "end_date": _first([r"(?:end date|finish date|completion date|to|until)\s*[:\-]\s*([0-9]{1,2}[/-][0-9]{1,2}[/-][0-9]{2,4}|[0-9]{4}[/-][0-9]{1,2}[/-][0-9]{1,2})"], text),
         "id_number": _first([r"(?:ic|nric|identity card|passport)\s*(?:no|number)?\s*[:\-]\s*([A-Z0-9 -]{5,20})"], text),
     }
     return {name: {"value": value, "confidence": 0.9 if value else 0.0} for name, value in fields.items()}
@@ -92,13 +100,23 @@ def validate_fields(fields: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
                 issues.append({"field": "cgpa", "severity": "error", "message": "CGPA must be between 0.00 and 4.00"})
         except ValueError:
             issues.append({"field": "cgpa", "severity": "error", "message": "CGPA is not numeric"})
+    start = fields.get("start_date", {}).get("value")
+    end = fields.get("end_date", {}).get("value")
+    if start and end:
+        try:
+            parse = lambda value: datetime.strptime(value, "%d/%m/%Y") if re.fullmatch(r"\d{1,2}/\d{1,2}/\d{4}", value) else datetime.strptime(value, "%Y-%m-%d")
+            if parse(start) > parse(end):
+                issues.append({"field": "end_date", "severity": "error", "message": "End date is before start date"})
+        except ValueError:
+            issues.append({"field": "date", "severity": "warning", "message": "Date format could not be checked"})
     return issues
 
 
 def process_document(content: bytes, filename: str, mime_type: str | None = None) -> dict[str, Any]:
     if len(content) > MAX_FILE_BYTES:
         raise ValueError("File is larger than the 15 MB limit")
-    if mime_type and mime_type not in SUPPORTED_TYPES and not filename.lower().endswith(".pdf"):
+    extension = os.path.splitext(filename.lower())[1]
+    if extension not in SUPPORTED_EXTENSIONS or (mime_type and mime_type not in SUPPORTED_TYPES):
         raise ValueError("Only PDF, PNG, JPG, JPEG, and WEBP files are supported")
     text, ocr_seconds = ocr_document(content, filename)
     fields = extract_fields(text)
@@ -120,3 +138,13 @@ def save_metadata(result: dict[str, Any], db_path: str = "formpilot.db") -> None
         digest = hashlib.sha256(result["text"].encode("utf-8")).hexdigest()
         db.execute("INSERT INTO documents(file_hash, filename, document_type, ocr_seconds, created_at) VALUES (?, ?, ?, ?, ?)", (digest, result["filename"], result["document"]["type"], result["ocr_seconds"], result["processed_at"]))
         db.commit()
+
+
+def recent_documents(db_path: str = "formpilot.db", limit: int = 10) -> list[dict[str, Any]]:
+    with sqlite3.connect(db_path) as db:
+        db.row_factory = sqlite3.Row
+        try:
+            rows = db.execute("SELECT filename, document_type, ocr_seconds, created_at FROM documents ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        except sqlite3.OperationalError:
+            return []
+    return [dict(row) for row in rows]

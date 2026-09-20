@@ -31,3 +31,11 @@ pytest
 ```
 
 The included fixture is only a smoke-test dataset. Replace it with labelled Malaysian forms before reporting portfolio metrics.
+
+## Optional classifier training
+
+The default classifier is deterministic and works without a model file. To train the included scikit-learn TF-IDF classifier from labelled examples, run:
+
+    python train_classifier.py
+
+The generated model stays local under models/ and is ignored by Git.

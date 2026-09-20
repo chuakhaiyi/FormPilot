@@ -2,7 +2,7 @@ import json
 
 import streamlit as st
 
-from app.core import process_document, save_metadata
+from app.core import process_document, recent_documents, save_metadata
 
 st.set_page_config(page_title="FormPilot", page_icon="📄", layout="wide")
 st.title("FormPilot")
@@ -10,6 +10,12 @@ st.caption("Offline document extraction for Malaysian students")
 st.info("🔒 Your document is processed locally. It is not uploaded to a cloud service.")
 
 uploaded = st.file_uploader("Upload a university, scholarship, or internship form", type=["pdf", "png", "jpg", "jpeg", "webp"])
+with st.expander("Recent local processing history"):
+    history = recent_documents()
+    if history:
+        st.dataframe(history, use_container_width=True, hide_index=True)
+    else:
+        st.caption("No documents processed on this computer yet.")
 if uploaded:
     with st.spinner("Reading your document locally…"):
         try:
