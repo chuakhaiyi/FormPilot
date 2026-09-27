@@ -20,9 +20,9 @@ html, body, [class*="st-"], button, input { font-family: -apple-system, BlinkMac
 .hero h1 { font-size: clamp(2.5rem, 4.8vw, 4.25rem); line-height: 1.05; letter-spacing: -.055em; font-weight: 650; padding: .3rem 0 1rem; }
 .hero h1 span { color: #54747c; }
 .hero p:not(.eyebrow) { color: var(--muted); font-size: 1rem; line-height: 1.65; }
-[data-testid="stVerticalBlockBorderWrapper"] > div { border-radius: 22px !important;
+[data-testid="stVerticalBlockBorderWrapper"]:has(> div > :is(.st-key-upload_panel, .st-key-review_panel)) { border-radius: 22px !important;
   border-color: #ffffff !important; background: rgba(255,255,255,.78);
-  box-shadow: 0 12px 34px #293b5110, inset 0 1px 0 #fff; padding: 1.35rem !important; }
+  box-shadow: 0 12px 34px #293b5110, inset 0 1px 0 #fff; }
 h3 { font-size: 1.08rem !important; letter-spacing: -.025em; font-weight: 650 !important; }
 [data-testid="stCaptionContainer"] { color: var(--muted); }
 [data-testid="stFileUploaderDropzone"] { border: 1px dashed #9baeb8; background: #f0f5f6; border-radius: 16px; padding: 1rem; }
@@ -42,11 +42,11 @@ button:disabled { opacity: .55; }
   box-shadow: 0 10px 25px #30475815; transform: rotate(-6deg); }
 .empty-state h2 { font-size: 1.45rem; letter-spacing: -.035em; }
 .empty-state p { font-size: .9rem; color: var(--muted); line-height: 1.7; }
-.steps { display: flex; justify-content: center; gap: 1.1rem; margin-top: 2rem; font-size: .75rem; color: #526b76; }
+.steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.1rem; margin-top: 2rem; font-size: .75rem; color: #526b76; }
 [data-baseweb="tab-list"] { gap: 1.1rem; }
 [data-baseweb="tab"] { min-height: 44px; }
 [data-testid="stMetricValue"] { font-size: 1.3rem; letter-spacing: -.025em; }
-.field-row { display: grid; grid-template-columns: 1fr 1.65fr auto; gap: .8rem;
+.field-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr) auto; gap: .8rem;
   padding: .9rem 0; border-bottom: 1px solid #dce5e9; font-size: .86rem; align-items: baseline; }
 .field-row:last-child { border-bottom: 0; }
 .field-label, .field-score { color: var(--muted); }
@@ -55,12 +55,29 @@ button:disabled { opacity: .55; }
 .footer { border-top: 1px solid #d2dfe4; padding: 1.5rem 0; margin-top: 2rem; font-weight: 650; font-size: .78rem; color: #526b76; }
 .footer span { float: right; font-weight: 400; }
 @media (max-width: 640px) {
-  [data-testid="stMainBlockContainer"] { padding: 1rem; }
-  .hero { padding-top: 2rem; }
-  .field-row { grid-template-columns: 1fr 1.4fr auto; gap: .4rem; }
+  [data-testid="stMainBlockContainer"] { padding: 1rem max(1rem, env(safe-area-inset-right)) 1rem max(1rem, env(safe-area-inset-left)); }
+  .topbar { padding: .7rem .8rem; gap: .5rem; flex-wrap: wrap; }
+  .brand { font-size: 1rem; }
+  .local-badge { font-size: .7rem; }
+  .hero { padding: 1.5rem 0 .6rem; }
+  .hero h1 { font-size: clamp(2rem, 8vw, 3rem); }
+  .hero p:not(.eyebrow) { font-size: .9rem; }
+  .hero br { display: none; }
+  .hero h1 span { display: block; }
+  .empty-state { padding: 1.5rem .25rem; }
+  .empty-state br { display: none; }
+  .how-it-works { padding: .7rem .25rem; }
+  [data-testid="stFileUploaderDropzone"] { flex-direction: column; align-items: stretch; gap: .75rem; }
+  [data-testid="stFileUploaderDropzone"] button { width: 100%; min-height: 44px; }
+  [data-baseweb="tab-list"] { gap: .65rem; overflow-x: auto; }
+  [data-baseweb="tab"] { flex-shrink: 0; }
+  .field-row { grid-template-columns: minmax(0, 1fr) auto; gap: .3rem .5rem; }
+  .field-row strong { grid-row: 2; grid-column: 1 / -1; font-size: .95rem; }
+  .field-score { grid-row: 1; grid-column: 2; }
+  [data-testid="stText"] { white-space: pre-wrap; overflow-wrap: anywhere; }
   .footer span { float: none; display: block; margin-top: .5rem; }
 }
 @media (prefers-reduced-motion: reduce) { button { transition: none !important; transform: none !important; } }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .topbar, [data-testid="stVerticalBlockBorderWrapper"] > div { background: #fff; backdrop-filter: none; border: 1px solid #6c808b !important; }
+  .topbar, [data-testid="stVerticalBlockBorderWrapper"]:has(> div > :is(.st-key-upload_panel, .st-key-review_panel)) { background: #fff; backdrop-filter: none; border: 1px solid #6c808b !important; }
 }

@@ -26,7 +26,7 @@ workspace, history_tab = st.tabs(["Document workspace", "Recent activity"])
 with workspace:
     upload_col, review_col = st.columns([1, 1.65], gap="large")
     with upload_col:
-        with st.container(border=True):
+        with st.container(border=True, key="upload_panel"):
             st.markdown("### 01 / Add a document")
             st.caption("PDF, PNG, JPG or WEBP · Up to 15 MB")
             uploaded = st.file_uploader("Choose your document", type=["pdf", "png", "jpg", "jpeg", "webp"],
@@ -59,7 +59,7 @@ with workspace:
 
     with review_col:
         result = st.session_state.get("result")
-        with st.container(border=True):
+        with st.container(border=True, key="review_panel"):
             st.markdown("### 02 / Review your results")
             if not result:
                 st.html('<div class="empty-state"><div class="document-symbol">≡</div>'
