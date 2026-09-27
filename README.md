@@ -2,6 +2,16 @@
 
 Offline document extraction and validation for Malaysian students.
 
+## Screenshots
+
+### Desktop workspace
+
+![FormPilot desktop workspace with document upload and review panels](docs/screenshots/desktop.png)
+
+### Mobile workspace
+
+<img src="docs/screenshots/mobile.png" alt="FormPilot mobile workspace with stacked upload and review panels" width="390">
+
 ## Run locally
 
 Install Tesseract, then:
